@@ -4,102 +4,52 @@
 #  المطور: الجنرال
 # ═══════════════════════════════════════════════════
 
-R='\033[1;31m'
-G='\033[1;32m'
-Y='\033[1;33m'
-C='\033[1;36m'
-W='\033[1;37m'
-P='\033[1;35m'
-NC='\033[0m'
-
 clear
 echo ""
-echo -e "${C}   ██████╗  ██████╗ ██████╗ ${NC}"
-echo -e "${C}  ██╔════╝ ██╔═══██╗╚════██╗${NC}"
-echo -e "${C}  ██║  ███╗██║   ██║ █████╔╝${NC}"
-echo -e "${C}  ██║   ██║██║   ██║ ╚═══██╗${NC}"
-echo -e "${C}  ╚██████╔╝╚██████╔╝██████╔╝${NC}"
-echo -e "${C}   ╚═════╝  ╚═════╝ ╚═════╝ ${NC}"
-echo -e "${P}  ╔═══════════════════════════╗${NC}"
-echo -e "${P}  ║  ${Y}تثبيت أداة G3D${P}          ║${NC}"
-echo -e "${P}  ║  ${G}المطور: الجنرال${P}        ║${NC}"
-echo -e "${P}  ╚═══════════════════════════╝${NC}"
+echo "   ██████╗  ██████╗ ██████╗ "
+echo "  ██╔════╝ ██╔═══██╗╚════██╗"
+echo "  ██║  ███╗██║   ██║ █████╔╝"
+echo "  ██║   ██║██║   ██║ ╚═══██╗"
+echo "  ╚██████╔╝╚██████╔╝██████╔╝"
+echo "   ╚═════╝  ╚═════╝ ╚═════╝ "
+echo ""
+echo "  ╔═══════════════════════════╗"
+echo "  ║  تثبيت أداة G3D          ║"
+echo "  ║  المطور: الجنرال         ║"
+echo "  ╚═══════════════════════════╝"
 echo ""
 
-echo -e "${C}[*] ${W}جاري التثبيت...${NC}"
+# ─── تحديث PATH فوراً ───
+export PATH="$HOME/.local/bin:$PATH"
 
-# التحقق من المتطلبات
-echo -e "${C}[*] ${W}التحقق من المتطلبات...${NC}"
-
-install_pkg() {
-    if command -v apt &> /dev/null; then
-        apt update -y && apt install -y "$@"
-    elif command -v pkg &> /dev/null; then
-        pkg update -y && pkg install -y "$@"
-    elif command -v pacman &> /dev/null; then
-        pacman -Sy --noconfirm "$@"
-    elif command -v dnf &> /dev/null; then
-        dnf install -y "$@"
-    elif command -v yum &> /dev/null; then
-        yum install -y "$@"
-    elif command -v zypper &> /dev/null; then
-        zypper install -y "$@"
-    else
-        echo -e "${R}[!] ${Y}لم يتم العثور على مدير حزم!${NC}"
-        exit 1
-    fi
-}
-
-# التحقق من curl
-if ! command -v curl &> /dev/null; then
-    echo -e "${Y}[!] ${W}جاري تثبيت curl...${NC}"
-    install_pkg curl
+# ─── تثبيت المتطلبات ───
+echo "[*] جاري تحديث الحزم..."
+if command -v pkg &> /dev/null; then
+    pkg update -y && pkg upgrade -y
+    echo "[*] جاري تثبيت المتطلبات..."
+    pkg install -y curl jq dnsutils whois python3
+elif command -v apt &> /dev/null; then
+    apt update -y && apt upgrade -y
+    echo "[*] جاري تثبيت المتطلبات..."
+    apt install -y curl jq dnsutils whois python3
+else
+    echo "[!] لم يتم العثور على مدير حزم!"
+    exit 1
 fi
 
-# التحقق من jq
-if ! command -v jq &> /dev/null; then
-    echo -e "${Y}[!] ${W}جاري تثبيت jq...${NC}"
-    install_pkg jq
-fi
-
-# التحقق من dig (dnsutils)
-if ! command -v dig &> /dev/null; then
-    echo -e "${Y}[!] ${W}جاري تثبيت dnsutils...${NC}"
-    install_pkg dnsutils || install_pkg bind-utils || install_pkg bind-tools
-fi
-
-# التحقق من whois
-if ! command -v whois &> /dev/null; then
-    echo -e "${Y}[!] ${W}جاري تثبيت whois...${NC}"
-    install_pkg whois
-fi
-
-# التحقق من python3
-if ! command -v python3 &> /dev/null; then
-    echo -e "${Y}[!] ${W}جاري تثبيت python3...${NC}"
-    install_pkg python3
-fi
-
-# إنشاء المجلد
+# ─── إنشاء المجلدات ───
 INSTALL_DIR="$HOME/.g3d"
 mkdir -p "$INSTALL_DIR"
 
-echo -e "${C}[*] ${W}جاري نسخ الملفات...${NC}"
+# ─── نسخ الملفات ───
+echo "[*] جاري نسخ الملفات..."
 cp g3d.sh "$INSTALL_DIR/"
-cp config.sh "$INSTALL_DIR/" 2>/dev/null || true
 chmod +x "$INSTALL_DIR/g3d.sh"
 
-# إنشاء اختصار
-echo -e "${C}[*] ${W}جاري إنشاء الاختصار...${NC}"
-
-if [ -d "$HOME/.local/bin" ]; then
-    BIN_DIR="$HOME/.local/bin"
-elif [ -d "/usr/local/bin" ] && [ -w "/usr/local/bin" ]; then
-    BIN_DIR="/usr/local/bin"
-else
-    BIN_DIR="$HOME/.local/bin"
-    mkdir -p "$BIN_DIR"
-fi
+# ─── إنشاء الاختصار ───
+echo "[*] جاري إنشاء الاختصار..."
+BIN_DIR="$HOME/.local/bin"
+mkdir -p "$BIN_DIR"
 
 cat > "$BIN_DIR/g3d" << 'EOF'
 #!/bin/bash
@@ -107,25 +57,65 @@ bash "$HOME/.g3d/g3d.sh" "$@"
 EOF
 chmod +x "$BIN_DIR/g3d"
 
-# إضافة للـ PATH
-if [[ ":$PATH:" != *":$BIN_DIR:"* ]]; then
-    echo 'export PATH="$HOME/.local/bin:$PATH"' >> "$HOME/.bashrc"
-    echo 'export PATH="$HOME/.local/bin:$PATH"' >> "$HOME/.zshrc" 2>/dev/null
+# ─── تحديث PATH بشكل دائم ───
+echo "[*] جاري تحديث PATH..."
+
+# للـ bash
+if [ -f "$HOME/.bashrc" ]; then
+    if ! grep -q "\.local/bin" "$HOME/.bashrc"; then
+        echo 'export PATH="$HOME/.local/bin:$PATH"' >> "$HOME/.bashrc"
+    fi
 fi
 
-echo ""
-echo -e "${G}[✓] ${W}تم التثبيت بنجاح!${NC}"
-echo ""
-echo -e "${C}[*] ${W}طريقة الاستخدام:${NC}"
-echo -e "${Y}  • ${W}اكتب: ${C}g3d${NC}"
-echo -e "${Y}  • ${W}أو: ${C}bash $INSTALL_DIR/g3d.sh${NC}"
-echo ""
-echo -e "${C}[*] ${W}للإزالة:${NC}"
-echo -e "${Y}  • ${W}rm -rf $INSTALL_DIR${NC}"
-echo -e "${Y}  • ${W}rm $BIN_DIR/g3d${NC}"
-echo ""
-echo -e "${P}  ═══════════════════════════════════════${NC}"
-echo -e "${P}  ${G}المطور: الجنرال${NC}"
-echo -e "${P}  ${G}مفتوحة المصدر - MIT License${NC}"
-echo -e "${P}  ═══════════════════════════════════════${NC}"
-echo ""
+# للـ zsh
+if [ -f "$HOME/.zshrc" ]; then
+    if ! grep -q "\.local/bin" "$HOME/.zshrc"; then
+        echo 'export PATH="$HOME/.local/bin:$PATH"' >> "$HOME/.zshrc"
+    fi
+fi
+
+# للـ Termux (profile)
+if [ -f "$HOME/.profile" ]; then
+    if ! grep -q "\.local/bin" "$HOME/.profile"; then
+        echo 'export PATH="$HOME/.local/bin:$PATH"' >> "$HOME/.profile"
+    fi
+fi
+
+# تحديث PATH في الجلسة الحالية
+export PATH="$HOME/.local/bin:$PATH"
+
+# ─── التحقق من الاختصار ───
+echo "[*] جاري التحقق..."
+if command -v g3d &> /dev/null; then
+    echo ""
+    echo "  ╔═══════════════════════════╗"
+    echo "  ║    ✅ تم التثبيت بنجاح!   ║"
+    echo "  ╚═══════════════════════════╝"
+    echo ""
+    echo "  [*] طريقة الاستخدام:"
+    echo "      اكتب: g3d"
+    echo ""
+    echo "  [*] أو:"
+    echo "      bash ~/.g3d/g3d.sh"
+    echo ""
+    echo "  [*] للإزالة:"
+    echo "      rm -rf ~/.g3d"
+    echo "      rm ~/.local/bin/g3d"
+    echo ""
+    echo "  ═══════════════════════════════════════"
+    echo "  المطور: الجنرال"
+    echo "  مفتوحة المصدر - MIT License"
+    echo "  ═══════════════════════════════════════"
+    echo ""
+
+    # تشغيل الأداة مباشرة
+    echo "[*] جاري تشغيل الأداة..."
+    sleep 2
+    g3d
+else
+    echo ""
+    echo "  [!] حدث خطأ!"
+    echo "  [*] جرب تشغيلها يدوياً:"
+    echo "      bash ~/.g3d/g3d.sh"
+    echo ""
+fi
