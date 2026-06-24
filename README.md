@@ -286,34 +286,7 @@ app.run(host='0.0.0.0', port=LOCAL_PORT, threaded=True, debug=False, use_reloade
 > - استخدامها ضد أشخاص دون إذنهم **جريمة إلكترونية**
 > - المطور غير مسؤول عن أي استخدام غير قانوني
 
-### 🔴 مشاكل أمنية في الكود الحالي
-1. **عدم تشفير البيانات:** كلمات المرور تُخزن نصاً عادياً في JSON
-2. **عدم التحقق من المدخلات:** يمكن حقن XSS أو إرسال بيانات ضارة
-3. **عدم وجود rate limiting:** يمكن إرسال آلاف الطلبات في الثانية
-4. **عدم وجود CORS protection:** يمكن استخدام الصفحات من أي موقع
-
-### ✅ الحلول المقترحة
-```python
-# 1. تشفير البيانات الحساسة
-from cryptography.fernet import Fernet
-key = Fernet.generate_key()
-cipher = Fernet(key)
-encrypted = cipher.encrypt(data.encode())
-
-# 2. التحقق من المدخلات
-import re
-def sanitize_input(data):
-    return re.sub(r'[<>{}/]', '', str(data))
-
-# 3. Rate limiting
-from flask_limiter import Limiter
-limiter = Limiter(app, key_func=get_remote_address)
-
-# 4. CORS
-from flask_cors import CORS
-CORS(app, resources={r"/capture": {"origins": "*"}})  # أو حدد المصادر
-```
-
+###
 ---
 
 ## 🔮 التطوير المستقبلي
